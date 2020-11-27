@@ -37,7 +37,7 @@ Hey there! my name is *{dispatcher.bot.first_name}*. If you have any questions o
 I'm here to make your group management fun and easy!
 i have lots of handy features, such as flood control, a warning system, a note keeping system, and even replies on predetermined filters.
 
-Any issues or need help related to me? join our group [Legends of Bikini Bottom](https://t.me/BikiniBottomStaff).
+Any issues or need help related to me? join our group [Escrow Telegram Official](https://t.me/escrow_telegram_official).
 
 Wanna Add me to your Group? Just click the button below!
 """
