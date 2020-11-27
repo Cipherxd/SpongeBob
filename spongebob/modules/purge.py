@@ -2,19 +2,26 @@ from spongebob import client, SUDO_USERS
 
 import asyncio
 from telethon import events
-from telethon.tl.types import ChannelParticipantsAdmins
+from telethon.tl.functions.channels import GetParticipantRequest
+from telethon.tl.types import ChannelParticipantAdmin, ChannelParticipantCreator, ChannelParticipantsAdmins
 from telethon.errors.rpcerrorlist import MessageDeleteForbiddenError
 
 # Check if user has admin rights
 async def is_administrator(user_id: int, message):
-    admin = False
-    async for user in client.iter_participants(
-        message.chat_id, filter=ChannelParticipantsAdmins
-    ):
-        if user_id == user.id or user_id in SUDO_USERS:
-            admin = True
-            break
-    return admin
+     if message.is_private or user_id in SUDO_USERS:
+        return True
+
+    if message.is_channel:
+        participant = await client(
+            GetParticipantRequest(message.chat_id, user_id))
+        return isinstance(participant.participant,
+                          (ChannelParticipantAdmin, ChannelParticipantCreator))
+
+    async for user in client.iter_participants(message.chat_id,
+                                             filter=ChannelParticipantsAdmins):
+        if user_id == user.id:
+            return True
+    return False
 
 
 @client.on(events.NewMessage(pattern="^/purge"))
@@ -22,7 +29,7 @@ async def purge(event):
     chat = event.chat_id
     msgs = []
 
-    if not await is_administrator(user_id=event.from_id, message=event):
+    if not await is_administrator(user_id=event.sender_id, message=event):
         await event.reply("You're not an admin!")
         return
 
@@ -63,7 +70,7 @@ async def purge(event):
 @client.on(events.NewMessage(pattern="^/del$"))
 async def delete_msg(event):
 
-    if not await is_administrator(user_id=event.from_id, message=event):
+    if not await is_administrator(user_id=event.sender_id, message=event):
         await event.reply("You're not an admin!")
         return
 
@@ -81,7 +88,6 @@ async def delete_msg(event):
 __help__ = """
 Deleting messages made easy with this command. Bot purges \
 messages all together or individually.
-
 *Admin only:*
  • /del: Deletes the message you replied to
  • /purge: Deletes all messages between this and the replied to message.
